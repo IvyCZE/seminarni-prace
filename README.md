@@ -1,1 +1,2 @@
-# smnr
+# Seminární práce
+- All files
