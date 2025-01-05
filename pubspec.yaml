@@ -1,15 +1,20 @@
 name: smnr
 description: "Seminární práce"
-
 version: 1.0.0+1
-
 environment:
   sdk: ^3.5.4
-
 dependencies:
   flutter:
     sdk: flutter
-
+  file_picker: ^5.2.0
+  cupertino_icons: ^1.0.8
+  hexagon: ^0.2.0
 dev_dependencies:
   flutter_test:
-    sdk: flutter
+    sdk: flutter
+  flutter_lints: ^4.0.0
+flutter:
+  assets:
+    - assets/
+    - assets/main.jpg
+  uses-material-design: true
