@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'editor.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const Home());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-  
+class Home extends StatelessWidget {
+  const Home({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,16 +20,7 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-class CalculatorApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: new ThemeData(
-          scaffoldBackgroundColor: const Color.fromARGB(10, 0, 0, 0)),
-    );
-  }
-}
+
 class AZkviztest extends StatefulWidget {
   const AZkviztest({super.key, required this.title});
 
@@ -39,255 +31,200 @@ class AZkviztest extends StatefulWidget {
 }
 
 class _AZkviztestState extends State<AZkviztest> {
+  final TextEditingController questionController = TextEditingController();
+  final TextEditingController answerController = TextEditingController();
+  final double baseHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.060;
+  final double expandedHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.105;
+  String _enteredText = '';
+  String hoveredButton = "";
+  String activeText = "";
 
-  void _buttonPressed(String value) {}
-  var hoverOnCreate = 50;
-  var isOpenCreate = "";
-  var hoverOnHost = 50;
-  var isOpenHost = "";
-  var hoverOnJoin = 50;
-  var isOpenJoin = "";
-  bool hoverCheckCreate = false;
-  bool hoverCheckHost = false;
-  bool hoverCheckJoin = false;
-  double delayCreate = 100;
-  double delayHost = 100;
-  double delayJoin = 100;
+  double _calculateDelay(int index) => (150 - (index * 50)).clamp(40, 150).toDouble();
+
+  Future<void> _animateText(String text) async {
+    for (int i = 1; i <= text.length; i++) {
+      if (hoveredButton != text) return; // Stop animation if hover changes
+      setState(() {
+        activeText = text.substring(0, i);
+      });
+      await Future.delayed(Duration(milliseconds: _calculateDelay(i).toInt()));
+    }
+  }
+
+  void _onEnter(String buttonText) {
+    setState(() {
+      hoveredButton = buttonText;
+      activeText = ""; // Reset text animation
+    });
+    _animateText(buttonText);
+  }
+
+  void _onExit() {
+    setState(() {
+      hoveredButton = "";
+      activeText = "";
+    });
+  }
+  Widget _buildMenuButton(String text, IconData icon, VoidCallback onPressed) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.25,
+      height: MediaQuery.of(context).size.height * 0.125,
+      child:
+          ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Color.fromARGB(255, 230, 160, 149),
+        padding: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          SizedBox( width: 35,),
+          Icon(icon, size: MediaQuery.of(context).size.width * 0.04, color: Color.fromARGB(200, 130, 100, 110),),
+          Text(text, style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.022, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 130, 100, 110),),),
+          Spacer(),
+        ],
+      ),
+    ));
+  }
+  Widget _buildHoverButton(String text, IconData icon, VoidCallback onPressed) {
+    final bool isHovered = hoveredButton == text;
+
+    return MouseRegion(
+      onEnter: (_) => _onEnter(text),
+      onExit: (_) => _onExit(),
+      child: AnimatedContainer(
+        width: isHovered ? expandedHoverWidth : baseHoverWidth,
+        height: baseHoverWidth,
+        duration: Duration(milliseconds: 250),
+        curve: Curves.easeOut,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Color.fromARGB(255, 230, 160, 149),
+            padding: EdgeInsets.zero,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20),
+              if (isHovered)
+                Text(
+                  activeText,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Padding(
-            padding:  EdgeInsets.all(5.0),
-          ),
-          Row(
-            children: [
-              Padding(
-                padding:  EdgeInsets.all(5.0),
-              ),
-              Container(
-                padding: EdgeInsets.all(5),
-                decoration: BoxDecoration(
+      body: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            SizedBox(height: 10,),
+            Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(10, 0, 0, 0),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 5),
+                        _buildHoverButton("Edit", Icons.edit, () => _buttonPressed("Edit")),
+                        SizedBox(width: 5),
+                        _buildHoverButton("Play", Icons.cast, () => _buttonPressed("Play")),
+                        SizedBox(width: 5),
+                        _buildHoverButton("Join", Icons.spoke, () => _buttonPressed("Join")),
+                        Spacer(),
+                        _buildHoverButton("User", Icons.perm_identity_rounded, () => _buttonPressed("User")),
+                        SizedBox(width: 5),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Padding(padding: EdgeInsets.only(top: 15)),
+            Container(
+              padding: EdgeInsets.all(50),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height - 100,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                // image: DecorationImage(image: AssetImage('assets/main.jpg'), fit: BoxFit.cover,),
                   color: Color.fromARGB(10, 0, 0, 0),
-                  borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                ),
-                width: MediaQuery.of(context).size.width * 0.98,
-                alignment: Alignment.center,
-                child: Row(
-                  children: [
-                    Padding(
-                      padding:  EdgeInsets.all(5),
-                    ),
-                    AnimatedContainer(
-                      padding: EdgeInsets.all(5),
-                      decoration: BoxDecoration(
-                          color: Color.fromARGB(10, 0, 0, 0),
-                          borderRadius: BorderRadius.all(Radius.circular(40.0)),
-                      ),
-                      width: 80 + (hoverOnCreate + hoverOnHost + hoverOnJoin as double),
-                      alignment: Alignment.center,
-                      curve: Curves.easeOut,
-                      duration: Duration(milliseconds: 200),
-                      child: Row(
-                        children: [
-                          Spacer(),
-                          MouseRegion(
-                            onEnter: (_) => {
-                              setState(() => hoverOnCreate = 90),
-                              setState(() => hoverCheckCreate = true),
-                              for (int i = 1; i <= "Edit".length; i++) {
-                                delayCreate = (150 - (i * 50)).clamp(45, 150) as double,
-                                Future.delayed(Duration(milliseconds: delayCreate * i as int), () {
-                                  if (hoverCheckCreate == true)
-                                  {
-                                    setState(() {
-                                      isOpenCreate = "Edit".substring(0, i);
-                                      setState(() => hoverOnJoin = 50);
-                                      setState(() => isOpenJoin = "");
-                                      setState(() => hoverOnHost = 50);
-                                      setState(() => isOpenHost = "");
-                                    });
-                                  }
-                                })
-                              },
-                            },
-                            onExit: (_) => {
-                              setState(() => hoverOnCreate = 50),
-                              setState(() => isOpenCreate = ""),
-                              setState(() => hoverCheckCreate = false),
-                            },
-                            child: AnimatedContainer(
-                              width: hoverOnCreate as double,
-                              height: 50,
-                              curve: Curves.easeOut,
-                              duration: Duration(milliseconds: 250),
-                              child: ElevatedButton(
-                                onPressed: () => _buttonPressed("test"),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Color.fromARGB(255, 230, 160, 149),
-                                  padding: EdgeInsets.zero,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(50)
-                                  )
-                                ),
-                                child: Center(
-                                    child:
-                                        Row(
-                                          children: [
-                                            Spacer(),
-                                            Icon(Icons.edit, size: 20,),
-                                            Text(isOpenCreate, style: TextStyle(fontWeight: FontWeight.bold),),
-                                            Spacer(),
-                                          ]
-                                        )
-                                ),
-                              )
-                            ),
-                          ),
-                          Padding(
-                            padding:  EdgeInsets.all(5),
-                          ),
-                          MouseRegion(
-                            onEnter: (_) => {
-                              setState(() => hoverOnHost = 90),
-                              setState(() => hoverCheckHost = true),
-                              for (int i = 1; i <= "Play".length; i++) {
-                                delayHost = (150 - (i * 50)).clamp(40, 150) as double,
-                                Future.delayed(Duration(milliseconds: delayHost * i as int), () {
-                                  if (hoverCheckHost == true) {
-                                    setState(() {
-                                      isOpenHost = "Play".substring(0, i);
-                                      setState(() => hoverOnCreate = 50);
-                                      setState(() => isOpenCreate = "");
-                                      setState(() => hoverOnJoin = 50);
-                                      setState(() => isOpenJoin = "");
-                                    });
-                                  }
-                                })
-                              },
-                            },
-                            onExit: (_) => {
-                              setState(() => hoverOnHost = 50),
-                              setState(() => isOpenHost = ""),
-                              setState(() => hoverCheckHost = false),
-                            },
-                            child: AnimatedContainer(
-                                width: hoverOnHost as double,
-                                height: 50,
-                                curve: Curves.easeOut,
-                                duration: Duration(milliseconds: 250),
-                                child: ElevatedButton(
-                                  onPressed: () => _buttonPressed("test"),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color.fromARGB(255, 230, 160, 149),
-                                      padding: EdgeInsets.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(50)
-                                      )
-                                  ),
-                                  child: Center(
-                                      child:
-                                      Row(
-                                          children: [
-                                            Spacer(),
-                                            Icon(Icons.cast, size: 20,),
-                                            Text(isOpenHost, style: TextStyle(fontWeight: FontWeight.bold),),
-                                            Spacer(),
-                                          ]
-                                      )
-                                  ),
-                                )
-                            ),
-                          ),
-                          Padding(
-                            padding:  EdgeInsets.all(5),
-                          ),
-                          MouseRegion(
-                            onEnter: (_) => {
-                              setState(() => hoverOnJoin = 90),
-                              setState(() => hoverCheckJoin = true),
-                              for (int i = 1; i <= "Join".length; i++) {
-                                delayJoin = (150 - (i * 50)).clamp(40, 150) as double,
-                                Future.delayed(Duration(milliseconds: delayJoin * i as int), () {
-                                  if (hoverCheckJoin == true) {
-                                    setState(() {
-                                      isOpenJoin = "Join".substring(0, i);
-                                      setState(() => hoverOnCreate = 50);
-                                      setState(() => isOpenCreate = "");
-                                      setState(() => hoverOnHost = 50);
-                                      setState(() => isOpenHost = "");
-                                    });
-                                  }
-                                })
-                              },
-                            },
-                            onExit: (_) => {
-                              setState(() => hoverOnJoin = 50),
-                              setState(() => isOpenJoin = ""),
-                              setState(() => hoverCheckJoin = false),
-                            },
-                            child: AnimatedContainer(
-                                width: hoverOnJoin as double,
-                                height: 50,
-                                curve: Curves.easeOut,
-                                duration: Duration(milliseconds: 250),
-                                child: ElevatedButton(
-                                  onPressed: () => _buttonPressed("test"),
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Color.fromARGB(255, 230, 160, 149),
-                                      padding: EdgeInsets.zero,
-                                      shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(50)
-                                      )
-                                  ),
-                                  child: Center(
-                                      child:
-                                      Row(
-                                          children: [
-                                            Spacer(),
-                                            Icon(Icons.spoke, size: 20,),
-                                            Text(isOpenJoin, style: TextStyle(fontWeight: FontWeight.bold),),
-                                            Spacer(),
-                                          ]
-                                      )
-                                  ),
-                                )
-                            ),
-                          ),
-                          Spacer(),
-                        ],
-                      ),
-                    ),
-                    Spacer(),
-                    Container(
-                      width: 100,
-                      alignment: Alignment.centerRight,
-                      child: ElevatedButton(
-                        onPressed: () => _buttonPressed("test"),
-                        style: ElevatedButton.styleFrom(
-                            backgroundColor: Color.fromARGB(255, 230, 160, 149),
-                            padding: EdgeInsets.all(20),
-                            shape: CircleBorder()
-                        ),
-                        child: Icon(Icons.perm_identity_rounded, size: 20,),
-                      ),
-                    ),
-                    Padding(
-                        padding:  EdgeInsets.all(5.0),
-                    ),
-                  ],
-                            )
-                          ,
-                ),
-              Padding(
-                padding:  EdgeInsets.all(5.0),
+                  borderRadius: BorderRadius.all(Radius.circular(10))
               ),
-            ],
-          )]
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.05,),
+                  Column(
+                    children: [
+                      Spacer(),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        child:
+                          Text('Random', style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.1, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 130, 100, 110),), textAlign: TextAlign.start),
+                      ),
+                      Container(
+                        width: MediaQuery.of(context).size.width * 0.5,
+                        child:
+                        Text('Text', style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.1, fontWeight: FontWeight.bold, color: Color.fromARGB(200, 130, 100, 110),), textAlign: TextAlign.start),
+                      ),
+                      Spacer()
+                    ],
+                  ),
+                  Spacer(),
+                  Column(
+                    children: [
+                      Spacer(),
+                      _buildMenuButton(' Create', Icons.edit, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => Editor()),
+                        );
+                      },),
+                      SizedBox(height: 10,),
+                      _buildMenuButton(' Start Playing', Icons.cast, () => _buttonPressed('abc')),
+                      SizedBox(height: 10,),
+                      _buildMenuButton(' Join Game', Icons.spoke, () => _buttonPressed('abc')),
+                      SizedBox(height: 10,),
+                      _buildMenuButton(' Login or Signup', Icons.perm_identity_rounded, () => _buttonPressed('abc')),
+                      Spacer(),
+                    ],
+                  ),
+                  SizedBox(width: MediaQuery.of(context).size.width * 0.05,),
+                ],
+              ),
+            )
+          ],
+        ),
       ),
     );
+  }
+  void _textInput(String value) {
+    setState(() {
+      _enteredText = value;
+    });
+    print("Entered text: $_enteredText");
+  }
+
+  void _buttonPressed(String value) {
+    print("Button pressed: $value");
   }
 }
