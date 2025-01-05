@@ -1,3 +1,3 @@
 # Seminární Práce
-https://hrudka.eu
+https://hrudka.eu (desktop)
 - Dart
