@@ -65,6 +65,7 @@ class _AZkviztestState extends State<AZkviztest> {
       activeText = "";
     });
   }
+
   Widget _buildMenuButton(String text, IconData icon, VoidCallback onPressed) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.25,
@@ -144,7 +145,12 @@ class _AZkviztestState extends State<AZkviztest> {
                     child: Row(
                       children: [
                         SizedBox(width: 5),
-                        _buildHoverButton("Edit", Icons.edit, () => _buttonPressed("Edit")),
+                        _buildHoverButton("Edit", Icons.edit, () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => Editor()),
+                          );
+                        },),
                         SizedBox(width: 5),
                         _buildHoverButton("Play", Icons.cast, () => _buttonPressed("Play")),
                         SizedBox(width: 5),
