@@ -36,6 +36,7 @@ class AZkviztest extends StatefulWidget {
 }
 
 class _AZkviztestState extends State<AZkviztest> {
+  // ############################## VARIABLES ##############################
   final TextEditingController questionController = TextEditingController();
   final TextEditingController answerController = TextEditingController();
   final double baseHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.060;
@@ -43,33 +44,25 @@ class _AZkviztestState extends State<AZkviztest> {
   String _enteredText = '';
   String hoveredButton = "";
   String activeText = "";
-
+  String currentquestion = "Question...";
+  String currentanswer = "Answer...";
+  int currentButton = 0;
   double _calculateDelay(int index) => (150 - (index * 50)).clamp(40, 150).toDouble();
+  double _sliderValue = 5;
 
-  Future<void> _animateText(String text) async {
-    for (int i = 1; i <= text.length; i++) {
-      if (hoveredButton != text) return; // Stop animation if hover changes
-      setState(() {
-        activeText = text.substring(0, i);
-      });
-      await Future.delayed(Duration(milliseconds: _calculateDelay(i).toInt()));
-    }
-  }
+  late List<Map<String, String>> buttonData;
 
-  void _onEnter(String buttonText) {
-    setState(() {
-      hoveredButton = buttonText;
-      activeText = ""; // Reset text animation
-    });
-    _animateText(buttonText);
-  }
-
-  void _onExit() {
-    setState(() {
-      hoveredButton = "";
-      activeText = "";
+  void initState() {
+    super.initState();
+    _updateButtonData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showPopup(context);
     });
   }
+
+
+  // ############################## WIDGETS ##############################
+
   Widget _buildMenuButton(String text, IconData icon, VoidCallback onPressed) {
     return ElevatedButton(
       onPressed: onPressed,
@@ -87,6 +80,7 @@ class _AZkviztestState extends State<AZkviztest> {
       ),
     );
   }
+
   Widget _buildHoverButton(String text, IconData icon, VoidCallback onPressed) {
     final bool isHovered = hoveredButton == text;
 
@@ -120,41 +114,8 @@ class _AZkviztestState extends State<AZkviztest> {
       ),
     );
   }
-  String currentquestion = "Question...";
-  String currentanswer = "Answer...";
-  int currentButton = 0;
 
-  final List<Map<String, String>> buttonData = List.generate(
-    25,
-        (index) => {"question": "", "answer": ""},
-  );
-
-  void _updateQuestionData(int index, String question) {
-    setState(() {
-      buttonData[index]["question"] = question;
-    });
-  }
-
-  void _updateAnswerData(int index, String answer) {
-    setState(() {
-      buttonData[index]["answer"] = answer;
-    });
-  }
-
-  void _updateIndex(int index) {
-    setState(() {
-      currentButton = index;
-      currentquestion = buttonData[currentButton]["question"] ?? "";
-      currentanswer = buttonData[currentButton]["answer"] ?? "";
-
-      // Update controllers
-      questionController.text = currentquestion;
-      answerController.text = currentanswer;
-    });
-  }
-
-  Widget _buildTextField(
-      TextEditingController controller, String hintText, ValueChanged<String> onChanged) {
+  Widget _buildTextField(TextEditingController controller, String hintText, ValueChanged<String> onChanged) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.3,
       height: MediaQuery.of(context).size.height * 0.3,
@@ -186,12 +147,12 @@ class _AZkviztestState extends State<AZkviztest> {
       height: MediaQuery.of(context).size.height * 0.7,
       width: MediaQuery.of(context).size.height * 0.7,
       child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 5,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _sliderValue as int,
           crossAxisSpacing: 4,
           mainAxisSpacing: 4,
         ),
-        itemCount: 25,
+        itemCount: _sliderValue * _sliderValue as int,
         itemBuilder: (context, index) {
           return _buildSquareButton(index);
         },
@@ -201,16 +162,16 @@ class _AZkviztestState extends State<AZkviztest> {
 
   Widget _buildSquareButton(int index) {
     String? questiontext;{
-      if(buttonData[index]["question"]!.length > 19){
-        questiontext = (buttonData[index]["question"]!.substring(0,20) + "...")!;
+      if(buttonData[index]["question"]!.length > (44-_sliderValue*5 as int)){
+        questiontext = (buttonData[index]["question"]!.substring(0,(45-_sliderValue*5) as int?) + "...")!;
       }
       else{
         questiontext = buttonData[index]["question"];
       }
     }
     String? answertext;{
-      if(buttonData[index]["answer"]!.length > 19){
-        answertext = (buttonData[index]["answer"]!.substring(0,20) + "...")!;
+      if(buttonData[index]["answer"]!.length > (44-_sliderValue*5 as int)){
+        answertext = (buttonData[index]["answer"]!.substring(0,(45-_sliderValue*5) as int?) + "...")!;
       }
       else{
         answertext = buttonData[index]["answer"];
@@ -219,7 +180,7 @@ class _AZkviztestState extends State<AZkviztest> {
     return ElevatedButton(
       onPressed: () => _updateIndex(index),
       style: ElevatedButton.styleFrom(
-        fixedSize: Size(80, 80),
+        fixedSize: Size((130 - _sliderValue*10), (130 - _sliderValue*10)),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
@@ -230,20 +191,20 @@ class _AZkviztestState extends State<AZkviztest> {
         children: [
           Text(
             questiontext!,
-            style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.0125, color: Color.fromARGB(230, 130, 100, 150), fontStyle: FontStyle.italic),
+            style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.0125 + 5 - _sliderValue, color: Color.fromARGB(230, 130, 100, 150), fontStyle: FontStyle.italic),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             answertext!,
-            style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.0125, color: Color.fromARGB(200, 130, 100, 110), fontStyle: FontStyle.italic),
+            style: TextStyle(fontSize: MediaQuery.of(context).size.height * 0.0125 + 5 - _sliderValue, color: Color.fromARGB(200, 130, 100, 110), fontStyle: FontStyle.italic),
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-
+  // ############################## BUILD WIDGET ##############################
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,6 +237,8 @@ class _AZkviztestState extends State<AZkviztest> {
                         SizedBox(width: 5),
                         _buildHoverButton("Join", Icons.spoke, () => _buttonPressed("Join")),
                         Spacer(),
+                        _buildHoverButton("Setup", Icons.settings, () => showPopup(context)),
+                        SizedBox(width: 5),
                         _buildHoverButton("Save", Icons.download, () => _saveGridToFile()),
                         SizedBox(width: 5),
                         _buildHoverButton("Load", Icons.upload_file, () => _loadGridFromFileOnWeb()),
@@ -331,6 +294,142 @@ class _AZkviztestState extends State<AZkviztest> {
       ),
     );
   }
+
+  // ############################## FUNC. ##############################
+
+  void _updateButtonData() {
+    setState(() {
+      buttonData = List.generate(
+        (_sliderValue * _sliderValue).toInt(),
+            (index) => {"question": "", "answer": ""},
+      );
+    });
+    print(buttonData);
+  }
+
+  void showPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder( // Use StatefulBuilder inside the dialog
+          builder: (BuildContext context, StateSetter setState) {
+            return AlertDialog(
+              title: const Text("Setup", style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
+              backgroundColor: Color.fromARGB(255, 255, 230, 222),
+              content: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min, // Important: Use min to avoid layout issues
+                children: [
+                  Row(
+                    children: [
+                      const Text("Type:", style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
+                      Spacer()
+                    ]
+                  ),
+                  SizedBox(height: 5,),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color.fromARGB(255, 230, 160, 149),
+                        ),
+                        onPressed: () => _buttonPressed,
+                        child: const Text("Tic Tac Toe", style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic)),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 15,),
+                  Row(
+                      children: [
+                        Text("Number of rows: $_sliderValue", style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
+                        Spacer()
+                      ]
+                  ),
+                  Slider(
+                    value: _sliderValue,
+                    min: 3,
+                    max: 8,
+                    activeColor: Color.fromARGB(255, 230, 160, 149),
+                    inactiveColor: Color.fromARGB(150, 130, 100, 130),
+                    divisions: 5,
+                    label: _sliderValue.toString(),
+                    onChanged: (double value) {
+                      setState(() {
+                        _sliderValue = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+              actions: <Widget>[
+                TextButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color.fromARGB(255, 230, 160, 149),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _updateButtonData();
+                    setState(() {});
+                  },
+                  child: const Text('Apply', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _animateText(String text) async {
+    for (int i = 1; i <= text.length; i++) {
+      if (hoveredButton != text) return; // Stop animation if hover changes
+      setState(() {
+        activeText = text.substring(0, i);
+      });
+      await Future.delayed(Duration(milliseconds: _calculateDelay(i).toInt()));
+    }
+  }
+
+  void _onEnter(String buttonText) {
+    setState(() {
+      hoveredButton = buttonText;
+      activeText = ""; // Reset text animation
+    });
+    _animateText(buttonText);
+  }
+
+  void _onExit() {
+    setState(() {
+      hoveredButton = "";
+      activeText = "";
+    });
+  }
+
+  void _updateQuestionData(int index, String question) {
+    setState(() {
+      buttonData[index]["question"] = question;
+    });
+  }
+
+  void _updateAnswerData(int index, String answer) {
+    setState(() {
+      buttonData[index]["answer"] = answer;
+    });
+  }
+
+  void _updateIndex(int index) {
+    setState(() {
+      currentButton = index;
+      currentquestion = buttonData[currentButton]["question"] ?? "";
+      currentanswer = buttonData[currentButton]["answer"] ?? "";
+
+      // Update controllers
+      questionController.text = currentquestion;
+      answerController.text = currentanswer;
+    });
+  }
+
   void _textInput(String value) {
     setState(() {
       _enteredText = value;
@@ -341,50 +440,48 @@ class _AZkviztestState extends State<AZkviztest> {
   void _buttonPressed(String value) {
     print("Button pressed: $value");
   }
+
+  // ############################## DOWNLOAD AND UPLOAD ##############################
   void _saveGridToFile() {
-    // Step 1: Extract grid data
-    String fileContent = "";
+    String fileContent = "GridSize: $_sliderValue\n\n"; // Add grid size at the start
     for (int i = 0; i < buttonData.length; i++) {
       fileContent += "Button ${i + 1}:\n";
       fileContent += "Question: ${buttonData[i]["question"] ?? "None"}\n";
       fileContent += "Answer: ${buttonData[i]["answer"] ?? "None"}\n\n";
     }
 
-    // Step 2: Create a Blob and trigger the download
-    final bytes = utf8.encode(fileContent); // Convert to bytes
+    final bytes = utf8.encode(fileContent);
     final blob = html.Blob([bytes]);
     final url = html.Url.createObjectUrlFromBlob(blob);
 
-    // Step 3: Trigger download
     final anchor = html.AnchorElement(href: url)
       ..target = 'blank'
-      ..download = 'tictactoe.httf'; // Desired file name and extension
+      ..download = 'tictactoe.httf';
     anchor.click();
 
-    // Cleanup
     html.Url.revokeObjectUrl(url);
   }
 
   Future<void> _loadGridFromFile() async {
-    // Step 1: Pick the file
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['httf'], // Limit to .htf files
+      allowedExtensions: ['httf'],
     );
 
     if (result != null) {
-      // Step 2: Read the file
       File file = File(result.files.single.path!);
       String fileContent = await file.readAsString();
-
-      // Step 3: Parse the file content
       List<String> lines = fileContent.split('\n');
       int buttonIndex = -1;
 
       for (String line in lines) {
         line = line.trim();
-        if (line.startsWith('Button')) {
-          // Button entry, update index
+        if (line.startsWith('GridSize:')) {
+          setState(() {
+            _sliderValue = double.parse(line.substring(9).trim());
+            _updateButtonData();
+          });
+        } else if (line.startsWith('Button')) {
           buttonIndex++;
           continue;
         } else if (line.startsWith('Question:')) {
@@ -396,11 +493,7 @@ class _AZkviztestState extends State<AZkviztest> {
         }
       }
 
-      // Step 4: Update the UI
-      setState(() {
-        // The `buttonData` list has been updated, so re-render the grid
-      });
-
+      setState(() {});
       print("Grid data loaded successfully!");
     } else {
       print("File selection canceled.");
@@ -408,53 +501,48 @@ class _AZkviztestState extends State<AZkviztest> {
   }
 
   Future<void> _loadGridFromFileOnWeb() async {
-    // Step 1: Pick the file
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['httf'], // Limit to .htf files
+      allowedExtensions: ['httf'],
     );
 
     if (result != null) {
-      // Step 2: Access the file content
       Uint8List? fileBytes = result.files.single.bytes;
       if (fileBytes != null) {
-        // Decode the file content
         String fileContent = utf8.decode(fileBytes);
-        print("File content: $fileContent"); // Debug: Print the file content
-
-        // Step 3: Parse the file content
+        print("File content: $fileContent");
         List<String> lines = fileContent.split('\n');
         int buttonIndex = -1;
 
         for (String line in lines) {
           line = line.trim();
-          if (line.startsWith('Button')) {
-            // Button entry, update index
+          if (line.startsWith('GridSize:')) {
+            setState(() {
+              _sliderValue = double.parse(line.substring(9).trim());
+              _updateButtonData();
+            });
+          } else if (line.startsWith('Button')) {
             buttonIndex++;
-            print("Processing Button $buttonIndex"); // Debug: Log button index
+            print("Processing Button $buttonIndex");
             continue;
           } else if (line.startsWith('Question:')) {
             String question = line.substring(9).trim();
             buttonData[buttonIndex]["question"] = question;
-            print("Question for Button $buttonIndex: $question"); // Debug: Log question
+            print("Question for Button $buttonIndex: $question");
           } else if (line.startsWith('Answer:')) {
             String answer = line.substring(7).trim();
             buttonData[buttonIndex]["answer"] = answer;
-            print("Answer for Button $buttonIndex: $answer"); // Debug: Log answer
+            print("Answer for Button $buttonIndex: $answer");
           }
         }
 
-        // Step 4: Update the UI
-        setState(() {
-          // Notify Flutter to re-render the UI
-        });
-
-        print("Grid data loaded successfully!");
+        setState(() {});
+        print("loaded!");
       } else {
-        print("Error: File content is null.");
+        print("err.");
       }
     } else {
-      print("File selection canceled.");
+      print("canceled.");
     }
   }
 }
