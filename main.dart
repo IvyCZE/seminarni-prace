@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'editor.dart';
+import 'play.dart';
 
 void main() {
   runApp(const Home());
@@ -205,7 +206,12 @@ class _AZkviztestState extends State<AZkviztest> {
                         );
                       },),
                       SizedBox(height: 10,),
-                      _buildMenuButton(' Start Playing', Icons.cast, () => _buttonPressed('abc')),
+                      _buildMenuButton(' Start Playing', Icons.cast, () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => PlayGame()),
+                        );
+                      },),
                       SizedBox(height: 10,),
                       _buildMenuButton(' Join Game', Icons.spoke, () => _buttonPressed('abc')),
                       SizedBox(height: 10,),
