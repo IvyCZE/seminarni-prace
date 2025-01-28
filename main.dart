@@ -171,7 +171,6 @@ class _AZkviztestState extends State<AZkviztest> {
               height: MediaQuery.of(context).size.height - 100,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                // image: DecorationImage(image: AssetImage('assets/main.jpg'), fit: BoxFit.cover,),
                   color: Color.fromARGB(10, 0, 0, 0),
                   borderRadius: BorderRadius.all(Radius.circular(10))
               ),
@@ -222,12 +221,6 @@ class _AZkviztestState extends State<AZkviztest> {
         ),
       ),
     );
-  }
-  void _textInput(String value) {
-    setState(() {
-      _enteredText = value;
-    });
-    print("Entered text: $_enteredText");
   }
 
   void _buttonPressed(String value) {
