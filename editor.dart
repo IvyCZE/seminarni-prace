@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:html' as html;
 import 'package:file_picker/file_picker.dart';
-import 'dart:io';
 import 'dart:typed_data';
-import 'dart:convert';
 
 void main() {
   runApp(const Editor());
@@ -41,7 +39,6 @@ class _AZkviztestState extends State<AZkviztest> {
   final TextEditingController answerController = TextEditingController();
   final double baseHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.060;
   final double expandedHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.105;
-  String _enteredText = '';
   String hoveredButton = "";
   String activeText = "";
   String currentquestion = "Question...";
@@ -62,25 +59,6 @@ class _AZkviztestState extends State<AZkviztest> {
 
 
   // ############################## WIDGETS ##############################
-
-  Widget _buildMenuButton(String text, IconData icon, VoidCallback onPressed) {
-    return ElevatedButton(
-      onPressed: onPressed,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Color.fromARGB(255, 230, 160, 149),
-        padding: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 20),
-          Text(text),
-        ],
-      ),
-    );
-  }
-
   Widget _buildHoverButton(String text, IconData icon, VoidCallback onPressed) {
     final bool isHovered = hoveredButton == text;
 
@@ -163,7 +141,7 @@ class _AZkviztestState extends State<AZkviztest> {
   Widget _buildSquareButton(int index) {
     String? questiontext;{
       if(buttonData[index]["question"]!.length > (44-_sliderValue*5 as int)){
-        questiontext = (buttonData[index]["question"]!.substring(0,(45-_sliderValue*5) as int?) + "...")!;
+        questiontext = (buttonData[index]["question"]!.substring(0,(45-_sliderValue*5) as int?) + "...");
       }
       else{
         questiontext = buttonData[index]["question"];
@@ -171,7 +149,7 @@ class _AZkviztestState extends State<AZkviztest> {
     }
     String? answertext;{
       if(buttonData[index]["answer"]!.length > (44-_sliderValue*5 as int)){
-        answertext = (buttonData[index]["answer"]!.substring(0,(45-_sliderValue*5) as int?) + "...")!;
+        answertext = (buttonData[index]["answer"]!.substring(0,(45-_sliderValue*5) as int?) + "...");
       }
       else{
         answertext = buttonData[index]["answer"];
@@ -430,13 +408,6 @@ class _AZkviztestState extends State<AZkviztest> {
     });
   }
 
-  void _textInput(String value) {
-    setState(() {
-      _enteredText = value;
-    });
-    print("Entered text: $_enteredText");
-  }
-
   void _buttonPressed(String value) {
     print("Button pressed: $value");
   }
@@ -462,15 +433,16 @@ class _AZkviztestState extends State<AZkviztest> {
     html.Url.revokeObjectUrl(url);
   }
 
-  Future<void> _loadGridFromFile() async {
+  Future<void> _loadGridFromFileOnWeb() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['httf'],
     );
 
     if (result != null) {
-      File file = File(result.files.single.path!);
-      String fileContent = await file.readAsString();
+      Uint8List? fileBytes = result.files.single.bytes;
+      String fileContent = utf8.decode(fileBytes!);
+      print("File content: $fileContent");
       List<String> lines = fileContent.split('\n');
       int buttonIndex = -1;
 
@@ -483,65 +455,22 @@ class _AZkviztestState extends State<AZkviztest> {
           });
         } else if (line.startsWith('Button')) {
           buttonIndex++;
+          print("Processing Button $buttonIndex");
           continue;
         } else if (line.startsWith('Question:')) {
-          buttonData[buttonIndex]["question"] = line.substring(10,line.length);
-          continue;
+          String question = line.substring(9).trim();
+          buttonData[buttonIndex]["question"] = question;
+          print("Question for Button $buttonIndex: $question");
         } else if (line.startsWith('Answer:')) {
-          buttonData[buttonIndex]["answer"] = line.substring(8,line.length);
-          continue;
+          String answer = line.substring(7).trim();
+          buttonData[buttonIndex]["answer"] = answer;
+          print("Answer for Button $buttonIndex: $answer");
         }
       }
 
       setState(() {});
-      print("Grid data loaded successfully!");
-    } else {
-      print("File selection canceled.");
-    }
-  }
-
-  Future<void> _loadGridFromFileOnWeb() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['httf'],
-    );
-
-    if (result != null) {
-      Uint8List? fileBytes = result.files.single.bytes;
-      if (fileBytes != null) {
-        String fileContent = utf8.decode(fileBytes);
-        print("File content: $fileContent");
-        List<String> lines = fileContent.split('\n');
-        int buttonIndex = -1;
-
-        for (String line in lines) {
-          line = line.trim();
-          if (line.startsWith('GridSize:')) {
-            setState(() {
-              _sliderValue = double.parse(line.substring(9).trim());
-              _updateButtonData();
-            });
-          } else if (line.startsWith('Button')) {
-            buttonIndex++;
-            print("Processing Button $buttonIndex");
-            continue;
-          } else if (line.startsWith('Question:')) {
-            String question = line.substring(9).trim();
-            buttonData[buttonIndex]["question"] = question;
-            print("Question for Button $buttonIndex: $question");
-          } else if (line.startsWith('Answer:')) {
-            String answer = line.substring(7).trim();
-            buttonData[buttonIndex]["answer"] = answer;
-            print("Answer for Button $buttonIndex: $answer");
-          }
-        }
-
-        setState(() {});
-        print("loaded!");
-      } else {
-        print("err.");
-      }
-    } else {
+      print("loaded!");
+        } else {
       print("canceled.");
     }
   }
