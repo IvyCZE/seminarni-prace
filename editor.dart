@@ -4,36 +4,14 @@ import 'dart:html' as html;
 import 'package:file_picker/file_picker.dart';
 import 'dart:typed_data';
 
-void main() {
-  runApp(const Editor());
-}
-
-class Editor extends StatelessWidget {
+class Editor extends StatefulWidget {
   const Editor({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Seminární Práce',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const AZkviztest(title: 'Seminární Práce Pg1'),
-    );
-  }
+  State<Editor> createState() => _AZkviztestState();
 }
 
-class AZkviztest extends StatefulWidget {
-  const AZkviztest({super.key, required this.title});
-
-  final String title;
-
-  @override
-  State<AZkviztest> createState() => _AZkviztestState();
-}
-
-class _AZkviztestState extends State<AZkviztest> {
+class _AZkviztestState extends State<Editor> {
   // ############################## VARIABLES ##############################
   final TextEditingController questionController = TextEditingController();
   final TextEditingController answerController = TextEditingController();
@@ -206,7 +184,7 @@ class _AZkviztestState extends State<AZkviztest> {
                         SizedBox(width: 5),
                         _buildHoverButton("Home", Icons.home, () {
                             Navigator.pop(context);
-                        },
+                            },
                         ),
                         SizedBox(width: 5),
                         _buildHoverButton("Edit", Icons.edit, () => _buttonPressed("Edit")),
