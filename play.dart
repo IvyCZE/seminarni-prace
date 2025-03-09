@@ -39,22 +39,33 @@ class _PlayGameState extends State<PlayGame> {
       builder: (BuildContext context) {
         return AlertDialog(
           backgroundColor: Color.fromARGB(255, 255, 230, 222),
-          title: const Text('Upload a File.', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.normal ,fontWeight: FontWeight.bold,),),
-          content: const Text('Please.', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
+          title: const Text('Pick a File.', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.normal ,fontWeight: FontWeight.bold,),),
+          content: const Text('From:', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
           actions: [
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 230, 160, 149),
-              ),
-              onPressed: () async {
-                await _loadGameFile();
-                Navigator.pop(context);
-              },
-              child: const Text('Pick file', style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
-            ),
+            _fileButton("Return"),
+            _fileButton("Your PC"),
+            _fileButton("Your Library"),
           ],
         );
       },
+    );
+  }
+
+  Widget _fileButton(String fileText) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Color.fromARGB(255, 230, 160, 149),
+      ),
+      onPressed: () async {
+        if(fileText == "Return") {
+          Navigator.pop(context);
+          Navigator.pop(context);
+        } else {
+          await _loadGameFile();
+          Navigator.pop(context);
+        }
+      },
+      child: Text(fileText, style: TextStyle(color: Color.fromARGB(255, 130, 100, 130), fontStyle: FontStyle.italic ,fontWeight: FontWeight.bold,),),
     );
   }
 
@@ -135,26 +146,24 @@ class _PlayGameState extends State<PlayGame> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      _updateBoard(index, "X");
-                      Navigator.pop(context);
-                    },
-                    child: const Text('X'),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      _updateBoard(index, "O");
-                      Navigator.pop(context);
-                    },
-                    child: const Text('O'),
-                  ),
+                  _answerButton("X", index),
+                  _answerButton("O", index),
                 ],
               ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _answerButton(String answerText, int index) {
+    return ElevatedButton(
+      onPressed: () {
+        _updateBoard(index, answerText);
+        Navigator.pop(context);
+      },
+      child: Text(answerText),
     );
   }
 
@@ -225,7 +234,6 @@ class _PlayGameState extends State<PlayGame> {
         ),
       );
     }
-
     return Scaffold(
       body: Center(
         child: Row(
