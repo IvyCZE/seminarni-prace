@@ -33,21 +33,23 @@ class AZkviztest extends StatefulWidget {
 }
 
 class _AZkviztestState extends State<AZkviztest> {
+  double _calculateDelay(int index) => (150 - (index * 50)).clamp(40, 150).toDouble();
+
+  String _enteredText = '';
+  String hoveredButton = "";
+  String activeText = "";
+  String uiColor = "cicada";
+
   final TextEditingController questionController = TextEditingController();
   final TextEditingController answerController = TextEditingController();
   final double baseHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.060;
   final double expandedHoverWidth = WidgetsBinding.instance.window.physicalSize.height * 0.105;
-  String _enteredText = '';
-  String hoveredButton = "";
-  String activeText = "";
-  static final aTextColorA = Color.fromARGB(225, 250, 213, 165);
 
+  // COLOR
+  static final aTextColorA = Color.fromARGB(225, 250, 213, 165);
   static final aBgColorA = Color.fromARGB(255, 54, 25, 46);
   static final aBgColorB = Color.fromARGB(55, 0, 0, 0);
-
   static final aBgColorC = Color.fromARGB(255, 45, 15, 51);
-
-
   static final cTextColorA = Color.fromARGB(200, 130, 100, 110);
   static final cBgColorA = Color.fromARGB(255, 230, 160, 149);
   static final cBgColorB = Color.fromARGB(10, 0, 0, 0);
@@ -69,9 +71,7 @@ class _AZkviztestState extends State<AZkviztest> {
     'c': cTextColorA,
     'a': aTextColorA,
   };
-
-  String uiColor = "cicada";
-  double _calculateDelay(int index) => (150 - (index * 50)).clamp(40, 150).toDouble();
+  // ||
 
   Future<void> _animateText(String text) async {
     for (int i = 1; i <= text.length; i++) {
@@ -171,6 +171,13 @@ class _AZkviztestState extends State<AZkviztest> {
     );
   }
 
+  Widget _menuText(String menuText) {
+    return Container(
+      width: MediaQuery.of(context).size.width * 0.5,
+      child:
+      Text(menuText, style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.1, fontWeight: FontWeight.bold, color: TextColorA[uiColor[0].toLowerCase()] ?? Colors.grey), textAlign: TextAlign.start),
+    );
+  }
 
   Widget buildPC(BuildContext context) {
     return Scaffold(
@@ -241,16 +248,8 @@ class _AZkviztestState extends State<AZkviztest> {
                   Column(
                     children: [
                       Spacer(),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child:
-                          Text('Random', style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.1, fontWeight: FontWeight.bold, color: TextColorA[uiColor[0].toLowerCase()] ?? Colors.grey), textAlign: TextAlign.start),
-                      ),
-                      Container(
-                        width: MediaQuery.of(context).size.width * 0.5,
-                        child:
-                        Text('Text', style: TextStyle(fontSize: MediaQuery.of(context).size.width * 0.1, fontWeight: FontWeight.bold, color: TextColorA[uiColor[0].toLowerCase()] ?? Colors.grey), textAlign: TextAlign.start),
-                      ),
+                      _menuText("Seminární"),
+                      _menuText("práce"),
                       Spacer()
                     ],
                   ),
@@ -293,6 +292,21 @@ class _AZkviztestState extends State<AZkviztest> {
     );
   }
 
+  void _uiColorChange() {
+    if(uiColor == "cicada") {
+      uiColor = "aster";
+    }
+    else {
+      uiColor = "cicada";
+    }
+    setState((){});
+  }
+
+  void _buttonPressed(String value) {
+    print("Button pressed: $value");
+  }
+
+  // ###############################################################################################################
   Widget buildMW(BuildContext context) {
     return Scaffold(
       body: Padding(
@@ -403,16 +417,4 @@ class _AZkviztestState extends State<AZkviztest> {
     );
   }
 
-  void _uiColorChange() {
-    if(uiColor == "cicada") {
-      uiColor = "aster";
-    }
-    else {
-      uiColor = "cicada";
-    }
-    setState((){});
-  }
-  void _buttonPressed(String value) {
-    print("Button pressed: $value");
-  }
 }
