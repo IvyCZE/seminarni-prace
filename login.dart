@@ -40,7 +40,9 @@ class _LoginScreenState extends State<LoginScreen> {
                   Spacer(),
                   _buildLoginButton("Google", Icons.pattern, 1),
                   Padding(padding: EdgeInsets.all(11),),
-                  _buildLoginButton("Local", Icons.password, 1),
+                  _buildLoginButton("Email", Icons.mail, 1),
+                  Padding(padding: EdgeInsets.all(11),),
+                  _buildLoginButton("Anonymous", Icons.person_outlined, 1),
                   Padding(padding: EdgeInsets.all(11),),
                   _buildLoginButton("Return", Icons.arrow_back, 0.6),
                   Spacer()
