@@ -1,22 +1,25 @@
-name: smnr
+name: seminarka
 description: "Seminární práce"
+publish_to: 'none'
 version: 1.0.0+1
+
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.7.2
+
 dependencies:
   flutter:
     sdk: flutter
-  file_picker: ^5.2.0
   cupertino_icons: ^1.0.8
+  firebase_core: ^3.1.1
+  firebase_auth: ^5.1.1
+  file_picker: ^5.2.0
   hexagon: ^0.2.0
-  flutter_secure_storage: ^9.0.0
-  local_auth: ^2.3.0
+  http: ^1.2.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
+
 flutter:
-  assets:
-    - assets/
-    - assets/main.jpg
   uses-material-design: true
